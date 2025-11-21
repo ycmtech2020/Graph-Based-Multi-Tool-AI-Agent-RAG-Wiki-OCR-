@@ -144,24 +144,18 @@ def tesseract_ocr_tool(state):
     try:
         # 1. Open image
         img = Image.open(ocr_file_path)
-        #Convert to grayscale ('L')
-        img = img.convert('L')
-        # 2. Binarization (setting a threshold to make it pure black and white)
-        # 128 is a common threshold value
-        threshold = 128 
-        img = img.point(lambda x: 0 if x < threshold else 255, '1')
-        img = img.convert('L')
-        # 3. Perform OCR
-        custom_config = r'--psm 6 --oem 3'
-        extracted_text = pytesseract.image_to_string(img, config=custom_config)
         
-        # 4. Format result
+        # 2. Perform OCR
+        extracted_text = pytesseract.image_to_string(img)
+        
+        # 3. Format result
         ocr_result_doc = Document(page_content=f"OCR Result from image at {ocr_file_path}: {extracted_text}")
         
         return {"documents": [ocr_result_doc], "question": state["question"]}
         
     except Exception as e:
         return {"documents": [Document(page_content=f"OCR Error: {e}")], "question": state["question"]}
+
 
 
 
