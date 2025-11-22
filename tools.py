@@ -144,17 +144,23 @@ def tesseract_ocr_tool(state):
     try:
         # 1. Open image
         img = Image.open(ocr_file_path)
-        
+        # 🟢 Contrast Enhancement & Grayscale (Recommended for receipts)
+        img = img.convert('L') # Grayscale
+        # Simple binarization (optional, but helps remove background noise)
+        threshold = 180 # A higher threshold works better for bills
+        img = img.point(lambda x: 0 if x < threshold else 255, '1').convert('L')
         # 2. Perform OCR
-        extracted_text = pytesseract.image_to_string(img)
+        custom_config = r'--psm 6 --oem 3' 
+        extracted_text = pytesseract.image_to_string(img, config=custom_config)
         
         # 3. Format result
-        ocr_result_doc = Document(page_content=f"OCR Result from image at {ocr_file_path}: {extracted_text}")
+        ocr_result_doc = Document(page_content=extracted_text)
         
         return {"documents": [ocr_result_doc], "question": state["question"]}
         
     except Exception as e:
         return {"documents": [Document(page_content=f"OCR Error: {e}")], "question": state["question"]}
+
 
 
 
