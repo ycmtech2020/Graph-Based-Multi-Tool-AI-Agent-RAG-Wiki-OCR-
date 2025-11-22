@@ -143,6 +143,7 @@ def generate(state):
     if is_ocr_task:
         print("---USING OCR EXTRACTION PROMPT---")
         print("---USING GENERIC OCR CLEANING PROMPT---")
+        safe_context = context.replace("{", "{{").replace("}", "}}")
         system_instruction = f"""
         You are an expert data cleaning, formatting, and summarizing assistant. 
         The context provided below is **raw, noisy text** obtained from an Optical Character Recognition (OCR) scan.
@@ -154,7 +155,7 @@ def generate(state):
         3.  **Answer:** Use the cleaned and formatted text to provide a concise and clear answer to the user's question: '{question}'.
         
         ## Raw OCR Context
-        {context}
+        {safe_context}
         """
         
     else:
@@ -250,5 +251,6 @@ def build_graph(checkpointer: InMemorySaver):
     # Pass the checkpointer during compilation!
 
     return workflow.compile(checkpointer=checkpointer)
+
 
 
