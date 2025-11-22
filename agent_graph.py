@@ -134,23 +134,82 @@ def generate(state):
     
     # Context
     context = "\n\n".join([doc.page_content for doc in documents])
+
+    # 🟢 DYNAMIC PROMPT CREATION BASED ON CONTEXT SOURCE 🟢
     
-    # Prompt with History and Context
+    # This logic assumes any text retrieved after asking an OCR-type question needs cleaning.
+    is_ocr_task = documents and state["question"].lower().strip().startswith(('read', 'extract', 'transcribe', 'what does the image say'))
+
+    if is_ocr_task:
+        print("---USING OCR EXTRACTION PROMPT---")
+        print("---USING GENERIC OCR CLEANING PROMPT---")
+        system_instruction = f"""
+        You are an expert data cleaning, formatting, and summarizing assistant. 
+        The context provided below is **raw, noisy text** obtained from an Optical Character Recognition (OCR) scan.
+        
+        YOUR TASK is to **cleanse and structure** this raw text to make it legible, then answer the user's question.
+        
+        1.  **Cleanse:** Correct spelling errors, combine fragmented words, and remove all obvious noise/junk characters.
+        2.  **Format:** Preserve the original structure (paragraphs, lists, or tables) as accurately as possible.
+        3.  **Answer:** Use the cleaned and formatted text to provide a concise and clear answer to the user's question: '{question}'.
+        
+        ## Raw OCR Context
+        {context}
+        """
+        # system_instruction = f"""
+        # You are an expert data extraction and cleaning assistant.
+        # The context provided below is raw, noisy text from an OCR scan of a bill or receipt.
+        
+        # YOUR TASK is to **cleanse and structure** this raw data, then answer the user's question.
+        
+        # 1.  **Cleanse:** Correct spelling, line breaks, and obvious OCR errors (e.g., '260GM' is 260GM).
+        # 2.  **Structure:** Extract and clearly list the following information:
+        #     -   **Customer/Bill:** Name, Bill No., Date, and Time.
+        #     -   **Financial Summary:** Gross Total, Discount, Round off, and Final Grand Total.
+        #     -   **Item List:** Clearly list the S. Description and its Quantity (Qty).
+        # 3.  **Answer:** Use this structured, cleansed data to provide a concise answer to the user's question: '{question}'.
+        
+        # ## Raw OCR Context
+        # {context}
+        # """
+    else:
+        print("---USING STANDARD RAG PROMPT---")
+        # Standard RAG prompt for PDF, Wikipedia, or simple chat
+        system_instruction = """You are a helpful, graph-based AI assistant. 
+            Answer the user's question based on the provided context (from RAG, Wikipedia, or OCR) and chat history.
+            If the context is irrelevant or not provided, answer based on your general knowledge.
+            
+            ## Relevant Context
+            {context}
+            
+            ## Chat History
+            {chat_history}
+            """
+
+    # 🟢 Use the dynamically generated system instruction
     prompt_template = ChatPromptTemplate.from_messages(
         [
-            ("system", """You are a helpful, graph-based AI assistant. 
-             Answer the user's question based on the provided context (from RAG, Wikipedia, or OCR) and chat history.
-             If the context is irrelevant or not provided, answer based on your general knowledge.
-             
-             ## Relevant Context
-             {context}
-             
-             ## Chat History
-             {chat_history}
-             """),
+            ("system", system_instruction),
             ("human", "{question}"),
         ]
     )
+    
+    # # Prompt with History and Context
+    # prompt_template = ChatPromptTemplate.from_messages(
+    #     [
+    #         ("system", """You are a helpful, graph-based AI assistant. 
+    #          Answer the user's question based on the provided context (from RAG, Wikipedia, or OCR) and chat history.
+    #          If the context is irrelevant or not provided, answer based on your general knowledge.
+             
+    #          ## Relevant Context
+    #          {context}
+             
+    #          ## Chat History
+    #          {chat_history}
+    #          """),
+    #         ("human", "{question}"),
+    #     ]
+    # )
 
     # Convert chat history for prompt
     chat_history_str = "\n".join([f"{msg.type.capitalize()}: {msg.content}" for msg in short_term_history])
@@ -206,3 +265,4 @@ def build_graph(checkpointer: InMemorySaver):
     # Pass the checkpointer during compilation!
 
     return workflow.compile(checkpointer=checkpointer)
+
