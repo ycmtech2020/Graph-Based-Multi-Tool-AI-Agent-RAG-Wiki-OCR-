@@ -134,7 +134,8 @@ def generate(state):
     
     # Context
     context = "\n\n".join([doc.page_content for doc in documents])
-
+    # Convert chat history for prompt
+    chat_history = "\n".join([f"{msg.type.capitalize()}: {msg.content}" for msg in short_term_history])
     # 🟢 DYNAMIC PROMPT CREATION BASED ON CONTEXT SOURCE 🟢
     
     # This logic assumes any text retrieved after asking an OCR-type question needs cleaning.
@@ -197,14 +198,13 @@ def generate(state):
     #     ]
     # )
 
-    # Convert chat history for prompt
-    chat_history = "\n".join([f"{msg.type.capitalize()}: {msg.content}" for msg in short_term_history])
+    
     
     # RAG Chain
     rag_chain = prompt_template | llm
     
     generation = rag_chain.invoke(
-        {"context": context, "question": question, "chat_history": chat_history_str}
+        {"context": context, "question": question, "chat_history": chat_history}
     )
     
     # Save current turn to long-term memory
@@ -251,6 +251,7 @@ def build_graph(checkpointer: InMemorySaver):
     # Pass the checkpointer during compilation!
 
     return workflow.compile(checkpointer=checkpointer)
+
 
 
 
