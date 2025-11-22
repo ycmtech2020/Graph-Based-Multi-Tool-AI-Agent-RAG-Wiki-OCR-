@@ -12,8 +12,8 @@ pytesseract
 Pillow
 wikipedia
 cassandra-driver
-PIL
 sentence-transformers
 tiktoken
 
 langchain-chroma
+
