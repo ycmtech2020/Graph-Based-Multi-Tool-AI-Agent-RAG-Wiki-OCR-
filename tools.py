@@ -1,7 +1,7 @@
 import os
 import io
 import pytesseract
-from PIL import Image
+from PIL import Image,ImageOps
 from typing import List
 from langchain_core.documents import Document
 from langchain_community.tools import WikipediaQueryRun
@@ -166,6 +166,7 @@ def tesseract_ocr_tool(state):
         
     except Exception as e:
         return {"documents": [Document(page_content=f"OCR Error: {e}")], "question": state["question"]}
+
 
 
 
