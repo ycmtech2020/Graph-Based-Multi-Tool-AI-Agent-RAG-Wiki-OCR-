@@ -198,7 +198,7 @@ def generate(state):
     # )
 
     # Convert chat history for prompt
-    chat_history_str = "\n".join([f"{msg.type.capitalize()}: {msg.content}" for msg in short_term_history])
+    chat_history = "\n".join([f"{msg.type.capitalize()}: {msg.content}" for msg in short_term_history])
     
     # RAG Chain
     rag_chain = prompt_template | llm
@@ -251,6 +251,7 @@ def build_graph(checkpointer: InMemorySaver):
     # Pass the checkpointer during compilation!
 
     return workflow.compile(checkpointer=checkpointer)
+
 
 
 
