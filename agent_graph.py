@@ -156,26 +156,11 @@ def generate(state):
         ## Raw OCR Context
         {context}
         """
-        # system_instruction = f"""
-        # You are an expert data extraction and cleaning assistant.
-        # The context provided below is raw, noisy text from an OCR scan of a bill or receipt.
         
-        # YOUR TASK is to **cleanse and structure** this raw data, then answer the user's question.
-        
-        # 1.  **Cleanse:** Correct spelling, line breaks, and obvious OCR errors (e.g., '260GM' is 260GM).
-        # 2.  **Structure:** Extract and clearly list the following information:
-        #     -   **Customer/Bill:** Name, Bill No., Date, and Time.
-        #     -   **Financial Summary:** Gross Total, Discount, Round off, and Final Grand Total.
-        #     -   **Item List:** Clearly list the S. Description and its Quantity (Qty).
-        # 3.  **Answer:** Use this structured, cleansed data to provide a concise answer to the user's question: '{question}'.
-        
-        # ## Raw OCR Context
-        # {context}
-        # """
     else:
         print("---USING STANDARD RAG PROMPT---")
         # Standard RAG prompt for PDF, Wikipedia, or simple chat
-        system_instruction = """You are a helpful, graph-based AI assistant. 
+        system_instruction = f"""You are a helpful, graph-based AI assistant. 
             Answer the user's question based on the provided context (from RAG, Wikipedia, or OCR) and chat history.
             If the context is irrelevant or not provided, answer based on your general knowledge.
             
@@ -265,4 +250,5 @@ def build_graph(checkpointer: InMemorySaver):
     # Pass the checkpointer during compilation!
 
     return workflow.compile(checkpointer=checkpointer)
+
 
